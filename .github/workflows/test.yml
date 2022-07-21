@@ -55,6 +55,6 @@ jobs:
           role-session-name: github-actions-oidc-session
           aws-region: ${{ secrets.AWS_API_REGION }}
       - uses: isbang/sqs-action@v0.1.1
-          with:
+        with:
           sqs-url: https://sqs.eu-west-1.amazonaws.com/${{secrets.AWS_ACCOUNT}}/env-code-coverage-Queue
           message: '{"project":"${{ inputs.domain }}", "score":"${{ steps.extract-coverage-pct.outputs.result }}"}'
