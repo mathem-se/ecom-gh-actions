@@ -32,12 +32,26 @@ jobs:
     steps:
       - name: Checkout code
         uses: actions/checkout@v3
-      - name: Deploy
-        uses: ./.github/actions/deploy
+      - name: Configure AWS Credentials
+        uses: aws-actions/configure-aws-credentials@v1
         with:
-          DOMAIN: ${{ inputs.domain }}
-          OWNER: ${{ inputs.owner }}
-          TEAM: ${{ inputs.team }}
-          AWS_ACCOUNT: ${{ secrets.AWS_ACCOUNT }}
-          AWS_DEPLOY_REGION: ${{ inputs.AWS_DEPLOY_REGION }}
-          AWS_API_REGION: ${{ secrets.AWS_API_REGION }}
+          role-to-assume: arn:aws:iam::${{ secrets.AWS_ACCOUNT }}:role/github-actions
+          role-session-name: github-actions-oidc-session
+          aws-region: ${{ secrets.AWS_API_REGION }}
+      - name: Deploy
+        shell: bash
+        run: |
+          sam build
+          sam deploy \
+          --no-confirm-changeset \
+          --no-fail-on-empty-changeset \
+          --stack-name ${{ github.event.repository.name }} \
+          --capabilities CAPABILITY_IAM CAPABILITY_NAMED_IAM \
+          --region ${{ inputs.AWS_DEPLOY_REGION  }} \
+          --s3-prefix ${{ github.event.repository.name }} \
+          --resolve-s3 \
+          --config-file ./github/actions/deploy/deploy-config.toml \
+          --tags \
+            'domain=${{ inputs.DOMAIN }} \
+            owner=${{ inputs.OWNER }} \
+            team=${{ inputs.TEAM }}'
