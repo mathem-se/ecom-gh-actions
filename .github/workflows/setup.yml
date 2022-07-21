@@ -2,6 +2,16 @@ name: Setup
 
 on:
   workflow_call:
+    outputs:
+      domain:
+        description: 'repo domain'
+        value: ${{ jobs.Setup.outputs.domain }}
+      team:
+        description: 'repo team'
+        value: ${{ jobs.Setup.outputs.team }}
+      owner:
+        description: 'repo owner'
+        value: ${{ jobs.Setup.outputs.owner }}
 
 jobs:
   Setup:
