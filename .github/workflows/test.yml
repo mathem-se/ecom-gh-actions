@@ -1,5 +1,4 @@
 name: Test and publish results
-description:
 
 on:
   workflow_call:
