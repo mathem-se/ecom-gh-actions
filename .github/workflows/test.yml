@@ -1,19 +1,9 @@
-name: Deploy to AWS
+name: Test and publish results
 
 on:
   workflow_call:
     inputs:
-      AWS_DEPLOY_REGION:
-        required: false
-        type: string
-        default: 'eu-west-1'
       domain:
-        required: true
-        type: string
-      owner:
-        required: true
-        type: string
-      team:
         required: true
         type: string
     secrets:
@@ -27,17 +17,24 @@ permissions:
   contents: read
 
 jobs:
-  Deploy:
+  Test:
     runs-on: ubuntu-latest
     steps:
       - name: Checkout code
         uses: actions/checkout@v3
-      - name: Deploy
-        uses: ./.github/actions/deploy
+      - id: run-tests
+        name: Run tests
+        uses: ./.github/actions/test
+      - name: Archive code coverage results
+        uses: actions/upload-artifact@v3
+        with:
+          name: code-coverage-report
+          path: ./coverage/report.json
+      - id: publish-results
+        name: Publish test results
+        uses: ./.github/actions/test-coverage-sqs
         with:
           DOMAIN: ${{ inputs.domain }}
-          OWNER: ${{ inputs.owner }}
-          TEAM: ${{ inputs.team }}
           AWS_ACCOUNT: ${{ secrets.AWS_ACCOUNT }}
-          AWS_DEPLOY_REGION: ${{ inputs.AWS_DEPLOY_REGION }}
           AWS_API_REGION: ${{ secrets.AWS_API_REGION }}
+          FUNCTIONS_COVERAGE_PCT: ${{ steps.run-tests.outputs.functions-coverage }}
