@@ -1,0 +1,106 @@
+name: Deploy to AWS
+
+on:
+  workflow_call:
+    inputs:
+      AWS_DEPLOY_REGION:
+        required: false
+        type: string
+        default: 'eu-west-1'
+    secrets:
+      AWS_ACCOUNT:
+        required: true
+      AWS_API:
+        required: true
+      AWS_REGION:
+        required: true
+
+permissions:
+  id-token: write
+  contents: read
+
+jobs:
+  Setup:
+    runs-on: ubuntu-latest
+    outputs:
+      domain: ${{ steps.tags.outputs.domain }}
+      team: ${{ steps.tags.outputs.team }}
+      owner: ${{ steps.tags.outputs.owner }}
+      branch: ${{ steps.other.outputs.branch }}
+    steps:
+      - name: Checkout code
+        uses: actions/checkout@v3
+      - id: tags
+        name: Set tags
+        run: |
+          echo "::set-output name=domain::$(cat ./parameters.test.json | jq -r .Tags.domain)"
+          echo "::set-output name=team::$(cat ./parameters.test.json | jq -r .Tags.team)"
+          echo "::set-output name=owner::$(cat ./parameters.test.json | jq -r .Tags.owner)"
+      - id: other
+        name: Set other variables
+        run: |
+          echo "::set-output name=branch::${GITHUB_REF##*/}"
+
+  Account:
+    needs: [Setup]
+    uses: mathem-se/gh-account-mapping/.github/workflows/workflow.yml@main
+    with:
+      branch: ${{ needs.Setup.outputs.branch }}
+      role-session-name: 'github-actions-oidc-session'
+    secrets:
+      AWS_ACCOUNT: ${{ secrets.AWS_CICD_ACCOUNT }}
+      AWS_API: ${{ secrets.AWS_CICD_API_URL }}
+      AWS_REGION: ${{ secrets.AWS_CICD_API_REGION }}
+
+  Test:
+    needs: [Setup, Account]
+    runs-on: ubuntu-latest
+    outputs:
+      functions-coverage: ${{steps.run-tests.outputs.functions-coverage}}
+    steps:
+      - name: Checkout code
+        uses: actions/checkout@v3
+      - id: run-tests
+        name: Run tests
+        uses: ./.github/actions/test
+      - name: Archive code coverage results
+        uses: actions/upload-artifact@v3
+        with:
+          name: code-coverage-report
+          path: ./coverage/report.json
+      - id: publish-results
+        name: Publish test results
+        uses: ./.github/actions/test-coverage-sqs
+        with:
+          DOMAIN: ${{ needs.Setup.outputs.domain }}
+          AWS_ACCOUNT: ${{ needs.Account.outputs.account }}
+          AWS_API_REGION: ${{ secrets.AWS_CICD_API_REGION }}
+          FUNCTIONS_COVERAGE_PCT: ${{ steps.run-tests.outputs.functions-coverage }}
+
+  Deploy:
+    runs-on: ubuntu-latest
+    needs: [Setup, Account, Test]
+    steps:
+      - name: Checkout code
+        uses: actions/checkout@v3
+      - name: Echo configuration
+        run: |
+          echo "Config below"
+          echo "-----------------------------------------"
+          echo "Branch:           ${{ needs.Setup.outputs.branch }}"
+          echo "Domain:           ${{ needs.Setup.outputs.domain }}"
+          echo "Owner:            ${{ needs.Setup.outputs.owner }}"
+          echo "Team:             ${{ needs.Setup.outputs.team }}"
+          echo "-----------------------------------------"
+          echo "Team domain:      ${{ needs.Account.outputs.domain }}"
+          echo "AWS account:      ${{ needs.Account.outputs.account }}"
+          echo "AWS region:       ${{ inputs.AWS_DEPLOY_REGION }}"
+      - name: Deploy
+        uses: ./.github/actions/deploy
+        with:
+          DOMAIN: ${{ needs.Setup.outputs.domain }}
+          OWNER: ${{ needs.Setup.outputs.owner }}
+          TEAM: ${{ needs.Setup.outputs.team }}
+          AWS_ACCOUNT: ${{ needs.Account.outputs.account }}
+          AWS_DEPLOY_REGION: ${{ inputs.AWS_DEPLOY_REGION }}
+          AWS_API_REGION: ${{ secrets.AWS_CICD_API_REGION }}
