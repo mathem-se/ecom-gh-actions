@@ -44,12 +44,20 @@ jobs:
             const coverageSummary = require("./coverage/coverage-summary.json")
             return coverageSummary.total.functions.pct
       - name: Archive code coverage results
+        if: |
+          github.ref_name == 'develop' ||
+          github.ref_name == 'main' ||
+          github.ref_name == 'master'
         uses: actions/upload-artifact@v3
         with:
           name: code-coverage-report
           path: ./coverage/report.json
       - name: Configure AWS Credentials
         uses: aws-actions/configure-aws-credentials@v1
+        if: |
+          github.ref_name == 'develop' ||
+          github.ref_name == 'main' ||
+          github.ref_name == 'master'
         with:
           role-to-assume: arn:aws:iam::${{ secrets.AWS_ACCOUNT }}:role/github-actions
           role-session-name: github-actions-oidc-session
