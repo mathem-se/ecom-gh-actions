@@ -23,23 +23,18 @@ jobs:
     steps:
       - name: Checkout code
         uses: actions/checkout@v3
-      - id: tags-develop
+      - id: tags-test
         name: Set tags for test
-        if: ${{ github.ref_name == 'develop' }}
+        if: github.ref_name == 'develop'
         run: |
           echo "domain=$(cat ./parameters.test.json | jq -r .Tags.domain)" >> $GITHUB_ENV
           echo "team=$(cat ./parameters.test.json | jq -r .Tags.team)" >> $GITHUB_ENV
           echo "owner=$(cat ./parameters.test.json | jq -r .Tags.owner)" >> $GITHUB_ENV
-      - id: tags-main
+      - id: tags-prod
         name: Set tags for prod
-        if: ${{ github.ref_name == 'main' }}
-        run: |
-          echo "domain=$(cat ./parameters.prod.json | jq -r .Tags.domain)" >> $GITHUB_ENV
-          echo "team=$(cat ./parameters.prod.json | jq -r .Tags.team)" >> $GITHUB_ENV
-          echo "owner=$(cat ./parameters.prod.json | jq -r .Tags.owner)" >> $GITHUB_ENV
-      - id: tags-master
-        name: Set tags for prod
-        if: ${{ github.ref_name == 'master' }}
+        if: |
+          github.ref_name == 'main' ||
+          github.ref_name == 'master'
         run: |
           echo "domain=$(cat ./parameters.prod.json | jq -r .Tags.domain)" >> $GITHUB_ENV
           echo "team=$(cat ./parameters.prod.json | jq -r .Tags.team)" >> $GITHUB_ENV
