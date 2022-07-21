@@ -7,6 +7,18 @@ on:
         required: false
         type: string
         default: 'eu-west-1'
+      branch:
+        required: true
+        type: string
+      domain:
+        required: true
+        type: string
+      owner:
+        required: true
+        type: string
+      team:
+        required: true
+        type: string
     secrets:
       AWS_ACCOUNT:
         required: true
@@ -20,43 +32,8 @@ permissions:
   contents: read
 
 jobs:
-  Setup:
-    runs-on: ubuntu-latest
-    outputs:
-      domain: ${{ steps.tags.outputs.domain }}
-      team: ${{ steps.tags.outputs.team }}
-      owner: ${{ steps.tags.outputs.owner }}
-      branch: ${{ steps.other.outputs.branch }}
-    steps:
-      - name: Checkout code
-        uses: actions/checkout@v3
-      - id: tags
-        name: Set tags
-        run: |
-          echo "::set-output name=domain::$(cat ./parameters.test.json | jq -r .Tags.domain)"
-          echo "::set-output name=team::$(cat ./parameters.test.json | jq -r .Tags.team)"
-          echo "::set-output name=owner::$(cat ./parameters.test.json | jq -r .Tags.owner)"
-      - id: other
-        name: Set other variables
-        run: |
-          echo "::set-output name=branch::${GITHUB_REF##*/}"
-
-  Account:
-    needs: [Setup]
-    uses: mathem-se/gh-account-mapping/.github/workflows/workflow.yml@main
-    with:
-      branch: ${{ needs.Setup.outputs.branch }}
-      role-session-name: 'github-actions-oidc-session'
-    secrets:
-      AWS_ACCOUNT: ${{ secrets.AWS_CICD_ACCOUNT }}
-      AWS_API: ${{ secrets.AWS_CICD_API_URL }}
-      AWS_REGION: ${{ secrets.AWS_CICD_API_REGION }}
-
   Test:
-    needs: [Setup, Account]
     runs-on: ubuntu-latest
-    outputs:
-      functions-coverage: ${{steps.run-tests.outputs.functions-coverage}}
     steps:
       - name: Checkout code
         uses: actions/checkout@v3
@@ -79,7 +56,7 @@ jobs:
 
   Deploy:
     runs-on: ubuntu-latest
-    needs: [Setup, Account, Test]
+    needs: [Test]
     steps:
       - name: Checkout code
         uses: actions/checkout@v3
