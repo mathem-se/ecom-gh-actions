@@ -7,6 +7,9 @@ on:
         required: false
         type: string
         default: 'eu-west-1'
+      environment:
+        required: true
+        type: string
       domain:
         required: true
         type: string
@@ -51,7 +54,8 @@ jobs:
           --s3-prefix ${{ github.event.repository.name }} \
           --resolve-s3 \
           --config-file ./github/actions/deploy/deploy-config.toml \
+          --config-env ${{ inputs.environment }} \
           --tags \
-            'domain=${{ inputs.DOMAIN }} \
-            owner=${{ inputs.OWNER }} \
-            team=${{ inputs.TEAM }}'
+            'domain=${{ inputs.domain }} \
+            owner=${{ inputs.owner }} \
+            team=${{ inputs.team }}'
