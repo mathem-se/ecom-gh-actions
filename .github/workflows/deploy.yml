@@ -44,10 +44,16 @@ jobs:
           role-to-assume: arn:aws:iam::${{ secrets.AWS_ACCOUNT }}:role/github-actions
           role-session-name: github-actions-oidc-session
           aws-region: ${{ secrets.AWS_API_REGION }}
+      - name: Build
+        shell: bash
+        run: |
+          sam build \
+          --parallel \
+          --config-file ./samconfig.toml \
+          --config-env ${{ inputs.environment }}
       - name: Deploy
         shell: bash
         run: |
-          sam build
           sam deploy \
           --no-confirm-changeset \
           --no-fail-on-empty-changeset \
