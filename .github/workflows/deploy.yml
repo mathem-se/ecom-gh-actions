@@ -19,6 +19,7 @@ on:
       owner:
         required: false
         type: string
+        default: ''
     secrets:
       AWS_ACCOUNT:
         required: true
