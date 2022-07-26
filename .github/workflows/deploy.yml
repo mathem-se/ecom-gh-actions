@@ -19,7 +19,6 @@ on:
       owner:
         required: false
         type: string
-        default: ''
     secrets:
       AWS_ACCOUNT:
         required: true
@@ -62,7 +61,7 @@ jobs:
           --resolve-s3 \
           --config-file ./samconfig.toml \
           --config-env ${{ inputs.environment }} \
-          --tags \g
+          --tags \
             'domain=${{ inputs.domain }} \
             owner=${{ inputs.owner }} \
             team=${{ inputs.team }}'
