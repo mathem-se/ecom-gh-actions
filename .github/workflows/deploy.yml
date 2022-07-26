@@ -13,11 +13,11 @@ on:
       domain:
         required: true
         type: string
-      owner:
-        required: true
-        type: string
       team:
         required: true
+        type: string
+      owner:
+        required: false
         type: string
     secrets:
       AWS_ACCOUNT:
