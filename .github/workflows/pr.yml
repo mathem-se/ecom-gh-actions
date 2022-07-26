@@ -16,7 +16,7 @@ jobs:
         run: |
           npm ci
           npm run compile
-          npm run test:ci-coverage
+          npm run test:ci
         shell: bash
       - name: Download develop test report
         continue-on-error: true

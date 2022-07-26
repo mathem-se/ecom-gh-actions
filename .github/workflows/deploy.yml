@@ -61,7 +61,7 @@ jobs:
           --resolve-s3 \
           --config-file ./samconfig.toml \
           --config-env ${{ inputs.environment }} \
-          --tags \
+          --tags \g
             'domain=${{ inputs.domain }} \
             owner=${{ inputs.owner }} \
             team=${{ inputs.team }}'
