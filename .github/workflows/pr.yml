@@ -15,7 +15,6 @@ jobs:
       - name: Run test
         run: |
           npm ci
-          npm run compile
           npm run test:ci
         shell: bash
       - name: Download develop test report

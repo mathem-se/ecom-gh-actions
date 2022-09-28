@@ -33,7 +33,6 @@ jobs:
       - name: Test
         run: |
           npm ci
-          npm run compile
           npm run test:ci
         shell: bash
       - uses: actions/github-script@v6
