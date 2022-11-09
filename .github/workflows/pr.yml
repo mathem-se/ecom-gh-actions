@@ -2,8 +2,8 @@ name: Test PR
 on:
   workflow_call:
 
-env:
-  GITHUB_TOKEN: ${{secrets.GH_PACKAGE_READ_ONLY}}
+permissions:
+  packages: read
 
 jobs:
   Test:
