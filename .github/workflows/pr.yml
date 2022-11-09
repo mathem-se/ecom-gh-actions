@@ -3,7 +3,7 @@ on:
   workflow_call:
 
 env:
-  NODE_AUTH_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+  NODE_AUTH_TOKEN: ${{ secrets.GH_PACKAGE_READ_ONLY }}
 
 jobs:
   Test:
