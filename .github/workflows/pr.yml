@@ -16,6 +16,10 @@ jobs:
         with:
           node-version: 16
           registry-url: 'https://registry.npmjs.org'
+      - name: log stuff
+        run: |
+          echo $GITHUB_TOKEN
+        shell: bash
       - name: Run test
         run: |
           npm ci 
