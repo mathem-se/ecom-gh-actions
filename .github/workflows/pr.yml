@@ -3,6 +3,7 @@ on:
   workflow_call:
 
 env:
+  GITHUB_TOKEN_ORIGINAL: ${{secrets.GITHUB_TOKEN}}
   GITHUB_TOKEN: ${{secrets.GH_PACKAGE_READ_ONLY}}
 
 jobs:
@@ -18,6 +19,7 @@ jobs:
           registry-url: 'https://registry.npmjs.org'
       - name: log stuff
         run: |
+          echo $GITHUB_TOKEN_ORIGINAL
           echo $GITHUB_TOKEN
         shell: bash
       - name: Run test
