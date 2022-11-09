@@ -2,8 +2,12 @@ name: Test PR
 on:
   workflow_call:
 
+permissions:
+  packages: read
+  contents: read
+
 env:
-  NODE_AUTH_TOKEN: ${{ secrets.GH_PACKAGE_READ_ONLY }}
+  NODE_AUTH_TOKEN: ${{ secrets.GITHUB_TOKEN }}
 
 jobs:
   Test:
