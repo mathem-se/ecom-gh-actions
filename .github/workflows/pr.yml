@@ -2,6 +2,9 @@ name: Test PR
 on:
   workflow_call:
 
+env:
+  NODE_AUTH_TOKEN: ${{secrets.GITHUB_TOKEN}}
+
 jobs:
   Test:
     runs-on: ubuntu-latest
