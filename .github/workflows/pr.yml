@@ -2,13 +2,6 @@ name: Test PR
 on:
   workflow_call:
 
-permissions:
-  packages: read
-  contents: read
-
-env:
-  NODE_AUTH_TOKEN: ${{ secrets.GITHUB_TOKEN }}
-
 jobs:
   Test:
     runs-on: ubuntu-latest
@@ -19,7 +12,6 @@ jobs:
         uses: actions/setup-node@v3
         with:
           node-version: 16
-          registry-url: https://npm.pkg.github.com/
       - name: Run test
         run: |
           npm ci 
