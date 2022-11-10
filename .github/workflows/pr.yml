@@ -3,8 +3,7 @@ on:
   workflow_call:
 
 env:
-  GITHUB_TOKEN_ORIGINAL: ${{secrets.GITHUB_TOKEN}}
-  GITHUB_TOKEN: ${{secrets.GH_PACKAGE_READ_ONLY}}
+  NODE_AUTH_TOKEN: ${{ secrets.GH_PACKAGE_READ_ONLY }}
 
 jobs:
   Test:
@@ -16,15 +15,10 @@ jobs:
         uses: actions/setup-node@v3
         with:
           node-version: 16
-          registry-url: 'https://registry.npmjs.org'
-      - name: log stuff
-        run: |
-          echo $GITHUB_TOKEN_ORIGINAL
-          echo $GITHUB_TOKEN
-        shell: bash
+          registry-url: 'https://npm.pkg.github.com'
       - name: Run test
         run: |
-          npm ci 
+          npm ci --ignore-scripts
           npm run test:ci
         shell: bash
       - uses: actions/github-script@v6
