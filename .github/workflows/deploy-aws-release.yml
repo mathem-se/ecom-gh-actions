@@ -20,7 +20,7 @@ on:
         required: true
 
 jobs:
-  Deploy:
+  Release:
     needs: [Account, Test]
     runs-on: ubuntu-latest
     steps:

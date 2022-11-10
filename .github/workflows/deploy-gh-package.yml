@@ -1,4 +1,4 @@
-name: Deploy to AWS
+name: Deploy to GH packages
 
 on:
   workflow_call:
@@ -33,7 +33,7 @@ jobs:
 
   Test:
     needs: [Account]
-    uses: mathem-se/ecom-gh-actions/.github/workflows/nested/test-deploy.yml@upgrade
+    uses: mathem-se/ecom-gh-actions/.github/workflows/deploy-test.yml@upgrade
     with:
       domain: ${{ inputs.domain }}
     secrets:
@@ -43,7 +43,7 @@ jobs:
 
   Release:
     needs: [Account, Test]
-    uses: mathem-se/ecom-gh-actions/.github/workflows/nested/release-gh-package.yml@upgrade
+    uses: mathem-se/ecom-gh-actions/.github/workflows/deploy-gh-package-release.yml@upgrade
     secrets:
       GITHUB_TOKEN: ${{ secrets.GH_TOKEN_SEMANTIC_RELEASE }}
       NPM_TOKEN: ${{ secrets.GH_TOKEN_SEMANTIC_RELEASE }}
