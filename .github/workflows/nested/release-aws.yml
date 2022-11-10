@@ -1,48 +1,42 @@
-# this will be deprecated
-
-name: Deploy to AWS
+name: Test and publish results
 
 on:
   workflow_call:
     inputs:
       AWS_DEPLOY_REGION:
-        required: false
-        type: string
-        default: 'eu-west-1'
-      environment:
         required: true
-        type: string
       domain:
         required: true
-        type: string
       team:
         required: true
-        type: string
-      owner:
-        required: false
-        type: string
+      environment:
+        required: true
     secrets:
       AWS_ACCOUNT:
         required: true
-      AWS_API_REGION:
+      AWS_CICD_API_REGION:
         required: true
-
-permissions:
-  id-token: write
-  contents: read
+      NODE_AUTH_TOKEN:
+        required: true
 
 jobs:
   Deploy:
+    needs: [Account, Test]
     runs-on: ubuntu-latest
     steps:
       - name: Checkout code
         uses: actions/checkout@v3
+      - name: Setup node
+        uses: actions/setup-node@v3
+        with:
+          node-version: 16
+          registry-url: 'https://npm.pkg.github.com'
       - name: Configure AWS Credentials
         uses: aws-actions/configure-aws-credentials@v1-node16
         with:
           role-to-assume: arn:aws:iam::${{ secrets.AWS_ACCOUNT }}:role/github-actions
           role-session-name: github-actions-oidc-session
-          aws-region: ${{ secrets.AWS_API_REGION }}
+          aws-region: ${{ secrets.AWS_CICD_API_REGION }}
       - name: Build
         shell: bash
         run: |
@@ -58,12 +52,11 @@ jobs:
           --no-fail-on-empty-changeset \
           --stack-name ${{ github.event.repository.name }} \
           --capabilities CAPABILITY_IAM CAPABILITY_NAMED_IAM \
-          --region ${{ inputs.AWS_DEPLOY_REGION  }} \
+          --region ${{ secrets.AWS_DEPLOY_REGION }} \
           --s3-prefix ${{ github.event.repository.name }} \
           --resolve-s3 \
           --config-file ./samconfig.toml \
           --config-env ${{ inputs.environment }} \
           --tags \
             'domain=${{ inputs.domain }} \
-            owner=${{ inputs.owner }} \
             team=${{ inputs.team }}'

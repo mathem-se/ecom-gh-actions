@@ -1,3 +1,5 @@
+# this will be deprecated
+
 name: Test PR
 on:
   workflow_call:

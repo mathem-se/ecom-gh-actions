@@ -1,29 +1,15 @@
-# this will be deprecated
-
-name: Test and publish results
-
+name: Test PR
 on:
   workflow_call:
-    inputs:
-      domain:
-        required: true
-        type: string
     secrets:
-      AWS_ACCOUNT:
+      NODE_AUTH_TOKEN:
         required: true
-      AWS_API_REGION:
-        required: true
-    outputs:
-      functions-coverage:
-        description: 'Unit test functions coverage'
-        value: ${{ jobs.Test.extract-coverage-pct.outputs.result}}
 
-permissions:
-  id-token: write
-  contents: read
+env:
+  NODE_AUTH_TOKEN: ${{ secrets.NODE_AUTH_TOKEN }}
 
 jobs:
-  Test:
+  Test-PR:
     runs-on: ubuntu-latest
     steps:
       - name: Checkout code
@@ -32,9 +18,10 @@ jobs:
         uses: actions/setup-node@v3
         with:
           node-version: 16
-      - name: Test
+          registry-url: 'https://npm.pkg.github.com'
+      - name: Run test
         run: |
-          npm ci
+          npm ci --ignore-scripts
           npm run test:ci
         shell: bash
       - uses: actions/github-script@v6
@@ -83,37 +70,20 @@ jobs:
               console.log('Not doing anything...')
               process.exit(0)
             }
-      - uses: actions/github-script@v6
-        id: extract-coverage-pct
+      - name: Download develop test report
+        continue-on-error: true
+        uses: dawidd6/action-download-artifact@v2
         with:
-          result-encoding: string
-          script: |
-            const coverageSummary = require("./coverage/coverage-summary.json")
-            return coverageSummary.total.functions.pct
-      - name: Archive code coverage results
-        if: |
-          github.ref_name == 'develop' ||
-          github.ref_name == 'main' ||
-          github.ref_name == 'master'
-        uses: actions/upload-artifact@v3
-        with:
+          github_token: ${{ github.token}}
+          workflow: deploy.yml
+          workflow_conclusion: success
+          branch: develop
           name: code-coverage-report
-          path: ./coverage/report.json
-      - name: Configure AWS Credentials
-        uses: aws-actions/configure-aws-credentials@v1
-        if: |
-          github.ref_name == 'develop' ||
-          github.ref_name == 'main' ||
-          github.ref_name == 'master'
+          path: ./coverage/main
+      - name: Create test report
+        continue-on-error: true
+        uses: ArtiomTr/jest-coverage-report-action@v2
         with:
-          role-to-assume: arn:aws:iam::${{ secrets.AWS_ACCOUNT }}:role/github-actions
-          role-session-name: github-actions-oidc-session
-          aws-region: ${{ secrets.AWS_API_REGION }}
-      - uses: isbang/sqs-action@v0.1.1
-        if: |
-          github.ref_name == 'develop' ||
-          github.ref_name == 'main' ||
-          github.ref_name == 'master'
-        with:
-          sqs-url: https://sqs.eu-west-1.amazonaws.com/${{secrets.AWS_ACCOUNT}}/env-code-coverage-Queue
-          message: '{"project":"${{ inputs.domain }}", "score":"${{ steps.extract-coverage-pct.outputs.result }}"}'
+          coverage-file: ./coverage/report.json
+          base-coverage-file: ./coverage/main/report.json
+          annotations: failed-tests
