@@ -5,12 +5,16 @@ on:
     inputs:
       AWS_DEPLOY_REGION:
         required: true
+        type: string
       domain:
         required: true
+        type: string
       team:
         required: true
+        type: string
       environment:
         required: true
+        type: string
     secrets:
       AWS_ACCOUNT:
         required: true
