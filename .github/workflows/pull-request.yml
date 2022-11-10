@@ -9,6 +9,6 @@ on:
 
 jobs:
   Test:
-    uses: mathem-se/ecom-gh-actions/.github/workflows/nested/test-pr.yml@upgrade
+    uses: mathem-se/ecom-gh-actions/.github/workflows/test-pr.yml@upgrade
     secrets:
       NODE_AUTH_TOKEN: ${{ secrets.NODE_AUTH_TOKEN }}
