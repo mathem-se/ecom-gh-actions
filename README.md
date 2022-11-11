@@ -1,3 +1,7 @@
+# DEPRECATING
+
+Migrate to use <https://github.com/mathem-se/gh-workflows-node> instead
+
 # Reusable workflows
 
 ## Getting started
