@@ -6,7 +6,7 @@ Migrate to use <https://github.com/mathem-se/gh-workflows-node> instead
 
 ## Getting started
 
-Add the following file `.github/workflows/pr.yml` to your project with this content:
+Add the file `.github/workflows/pr.yml` to your project with the following contents.
 
 ```yaml
 name: Pull request
@@ -17,6 +17,10 @@ jobs:
     uses: mathem-se/ecom-gh-actions/.github/workflows/pr.yml@main
 ```
 
-Add the following scripts:
+Add a `test:ci` script to your `package.json`.
 
-- `"test:ci"` (i.e. `"jest --coverage --ci --json --testLocationInResults --outputFile=./coverage/report.json"`)
+Example:
+
+```json
+"test:ci": "jest --coverage --ci --json --testLocationInResults --outputFile=./coverage/report.json"
+```
